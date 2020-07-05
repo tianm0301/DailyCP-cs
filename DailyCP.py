@@ -273,12 +273,9 @@ class DailyCP:
                                          ["wid"], detail["collector"]["schoolTaskWid"], form, address)
             else:
                 with open(formpath, "wb") as file:
-                    ##云函数无法写入文件
                     file.write(json.dumps(
                         form,ensure_ascii=False).encode("utf-8"))
-                    ##打卡失败
                     print("请手动打卡，之后重新运行脚本".format(formpath=formpath))
-#                   ##返回打卡失败结果
                     Message = message()
                     Message.sendMessage("请手动打卡，之后重新运行脚本")
                     exit()

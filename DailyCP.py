@@ -182,8 +182,9 @@ class DailyCP:
             "https://{host}/wec-counselor-stu-apps/stu/notice/queryProcessingNoticeList", body)
         return ret["datas"]["rows"]
 
-    def confirmNotice(self, wid):
+    def confirmNotice(self, wid,formWid):
         body = {
+            "formWid": formWid,  ##bug
             "wid": wid
         }
         ret = self.request(
@@ -234,7 +235,6 @@ class DailyCP:
 
     def autoComplete(self, address, dbpath):
         collectList = self.getCollectorList()
-        print(collectList)
         for item in collectList:
             # if item["isHandled"] == True:continue
             detail = self.getCollectorDetail(item["wid"])
@@ -243,6 +243,7 @@ class DailyCP:
 
             formpath = "{dbpath}/{charac}.json".format(
                 charac=self.getFormCharac(item), dbpath=dbpath)
+            print(item)
             if os.path.exists(formpath):
                 with open(formpath, "rb") as file:
                     def find(l, key_valueList: list):
@@ -272,16 +273,20 @@ class DailyCP:
                                          ["wid"], detail["collector"]["schoolTaskWid"], form, address)
             else:
                 with open(formpath, "wb") as file:
+                    ##云函数无法写入文件
                     file.write(json.dumps(
-                        form, ensure_ascii=False).encode("utf-8"))
-                    print("请手动填写{formpath}，之后重新运行脚本".format(formpath=formpath))
+                        form,ensure_ascii=False).encode("utf-8"))
+                    ##打卡失败
+                    print("请手动打卡，之后重新运行脚本".format(formpath=formpath))
+#                   ##返回打卡失败结果
+                    Message = message()
+                    Message.sendMessage("请手动打卡，之后重新运行脚本")
                     exit()
 
         confirmList = self.getNoticeList()
         print(confirmList)
         for item in confirmList:
-            self.confirmNotice(item["noticeWid"])
-
+            self.confirmNotice(item["Wid"],item["formWid"])
 
 if __name__ == "__main__":
     if len(sys.argv) != 6:
